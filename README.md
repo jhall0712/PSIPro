@@ -1,3 +1,8 @@
+May 3rd, 2026
+
+Added helper to remove @ function to work with DroidLink
+
+
 # PSIPro Version 1.7 - Released December 30th 2020
 
 ## Author
