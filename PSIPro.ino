@@ -282,6 +282,7 @@
  * for user adjustable settings.  
 */
 
+
 // Include the various libraries that we need.
 #include <FastLED.h>
 #include <EEPROM.h>
@@ -347,7 +348,6 @@ unsigned long nextEvent = 0;
 unsigned long swipeDelay = 0;
 unsigned long lastLedUpdate = 0;
 CRGB overlayColors[COLUMNS];
-
 
 // Setup
 void setup() {
@@ -456,6 +456,19 @@ void loop()
 //////////////////////////
 // LED Helper Functions //
 //////////////////////////
+
+//Remove @ Symbol for DroidLink
+ void removeAtSymbol(char* str) {
+  int i = 0, j = 0;
+
+  while (str[i] != '\0') {
+    if (str[i] != '@') {   // 👈 skip ONLY '@'
+      str[j++] = str[i];
+    }
+    i++;
+  }
+  str[j] = '\0'; // terminate cleaned string
+}
 
 void allON(CRGB color, bool showLED, unsigned long runtime=0)
 {
@@ -2266,7 +2279,8 @@ void serialEvent() {
     command_available=buildCommand(ch, cmdString);  // build command line
     if (command_available) 
     {
-      parseCommand(cmdString);  // interpret the command
+	  removeAtSymbol(cmdString);   // 👈 remove '@' here
+      parseCommand(cmdString);     // 👈 process normally
     }
   }
   sei();
