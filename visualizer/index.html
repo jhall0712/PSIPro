@@ -202,9 +202,16 @@
           4. Set the frame delay. Lower = faster animation.<br>
           5. Optional: set sequence runtime. Example: <code>5000</code> runs about 5 seconds before PSIPro resumes normal/default behavior. Use <code>0</code> for normal PSIPro runtime handling.<br>
           6. Copy each generated code block separately:<br>
-          &nbsp;&nbsp;• <strong>Frame Data / PROGMEM Patterns</strong> → paste near your other PSIPro letter/pattern arrays.<br>
-          &nbsp;&nbsp;• <strong>Playback Function</strong> → paste near your other PSIPro pattern functions.<br>
-          &nbsp;&nbsp;• <strong>Command Handler Case</strong> → paste inside the existing PSIPro command switch near the other <code>case</code> statements.<br>
+          &nbsp;&nbsp;• <strong>Frame Data / PROGMEM Patterns</strong> → paste into <code>matrices.h</code> near the other PSIPro letter/pattern arrays.<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Look for existing arrays like:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>const byte LetterA[] PROGMEM =</code><br>
+          &nbsp;&nbsp;• <strong>Playback Function</strong> → paste into the main PSIPro <code>.ino</code> file below this function:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>void displayMatrixColor(const byte* matrix, CRGB fgcolor, CRGB bgcolor, bool displayMe, unsigned long runtime</code><br>
+          &nbsp;&nbsp;• <strong>Command Handler Case</strong> → paste into the main PSIPro <code>.ino</code> file inside the pattern switch below:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>void runPattern(uint8_t pattern)</code><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>{</code><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>&nbsp;&nbsp;...</code><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code>&nbsp;&nbsp;switch (pattern) {</code><br>
           &nbsp;&nbsp;• <strong>PSIPro Trigger Command</strong> → use with MarcDuino, DroidLink, serial monitor, or testing.<br>
           7. Search your PSIPro file for existing <code>case</code> statements, <code>switch</code>, or <code>displayMatrixColor(</code> to find the correct command handler section.
         </p>
@@ -271,7 +278,7 @@
           <div id="splitOutputWrap" class="split-output">
             <div>
               <div class="output-label">1. Frame Data / PROGMEM Patterns</div>
-              <p class="subtext">Paste this near your other letter/pattern arrays.</p>
+              <p class="subtext">Paste this into <code>matrices.h</code> near the other PSIPro letter/pattern arrays.</p>
               <textarea id="frameDataOutput" readonly></textarea>
               <button type="button" class="copy-small" id="copyFrameDataButton">Copy Frame Data</button>
             </div>
