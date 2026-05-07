@@ -258,6 +258,10 @@
           <label for="frameDelayExport">Frame delay for generated function, ms</label>
           <input id="frameDelayExport" class="text-input" type="number" value="150" min="10" step="10" />
 
+          <label for="loopCountExport">Loop count for command case</label>
+          <input id="loopCountExport" class="text-input" type="number" value="0" min="0" step="1" />
+          <p class="subtext">Use 0 to let the animation run until the runtime timer expires. Example: 3 = loop 3 times.</p>
+
           <label for="sequenceRuntimeExport">Sequence run time before default resumes, ms</label>
           <input id="sequenceRuntimeExport" class="text-input" type="number" value="0" min="0" step="100" />
           <p class="subtext">Use 0 to keep using the normal PSIPro/runtime behavior. Example: 5000 = play for about 5 seconds.</p>
@@ -338,6 +342,7 @@
       triggerOutput: document.getElementById('triggerOutput'),
       commandNumber: document.getElementById('commandNumber'),
       frameDelayExport: document.getElementById('frameDelayExport'),
+      loopCountExport: document.getElementById('loopCountExport'),
       sequenceRuntimeExport: document.getElementById('sequenceRuntimeExport'),
       countOn: document.getElementById('countOn'),
       copyStatus: document.getElementById('copyStatus'),
@@ -486,19 +491,21 @@
       ].join(NEWLINE);
     }
 
-    function formatPsiProCommandCase(baseName, commandNumber, frameDelay, sequenceRuntime) {
+    function formatPsiProCommandCase(baseName, commandNumber, frameDelay, loopCount, sequenceRuntime) {
       const cleanBase = cleanPatternName(baseName || 'CustomSequence');
       const functionName = cleanPatternName(cleanBase.toLowerCase() + '_animation');
       const safeCommand = Math.max(0, Number(commandNumber) || 0);
       const safeDelay = Math.max(10, Number(frameDelay) || 150);
+      const safeLoops = Math.max(0, Number(loopCount) || 0);
       const safeRuntime = Math.max(0, Number(sequenceRuntime) || 0);
       const runtimeValue = safeRuntime > 0 ? String(safeRuntime) : 'runtime';
       return [
         '// Ready-to-paste command handler snippet:',
         '// Search your PSIPro INO for switch, case statements, or displayMatrixColor(.',
+        '// Loop note: this PSIPro runPattern() area does not have a loops variable, so use a number.',
         '// Runtime note: 0 in the visualizer passes through PSIPro runtime behavior.',
         'case ' + safeCommand + ':',
-        '  ' + functionName + '(' + safeDelay + ', loops, ' + runtimeValue + ');',
+        '  ' + functionName + '(' + safeDelay + ', ' + safeLoops + ', ' + runtimeValue + ');',
         '  break;'
       ].join(NEWLINE);
     }
@@ -508,7 +515,7 @@
       return '@0T' + safeCommand;
     }
 
-    function formatPsiProFullInoBlock(baseName, commandNumber, frameDelay, sequenceRuntime) {
+    function formatPsiProFullInoBlock(baseName, commandNumber, frameDelay, loopCount, sequenceRuntime) {
       if (frames.length === 0) return '// No saved frames yet. Add frames first.';
       const cleanBase = cleanPatternName(baseName || 'CustomSequence');
       return [
@@ -522,7 +529,7 @@
         formatPsiProPlaybackFunction(cleanBase, frameDelay),
         '',
         '// SECTION 3: COMMAND HANDLER CASE',
-        formatPsiProCommandCase(cleanBase, commandNumber, frameDelay, sequenceRuntime),
+        formatPsiProCommandCase(cleanBase, commandNumber, frameDelay, loopCount, sequenceRuntime),
         '',
         '// SECTION 4: PSIPro TRIGGER COMMAND',
         formatPsiProTrigger(commandNumber)
@@ -539,7 +546,7 @@
       }
       ids.frameDataOutput.value = formatPsiProSequence(patternName);
       ids.functionOutput.value = formatPsiProPlaybackFunction(patternName, ids.frameDelayExport.value);
-      ids.caseOutput.value = formatPsiProCommandCase(patternName, ids.commandNumber.value, ids.frameDelayExport.value, ids.sequenceRuntimeExport.value);
+      ids.caseOutput.value = formatPsiProCommandCase(patternName, ids.commandNumber.value, ids.frameDelayExport.value, ids.loopCountExport.value, ids.sequenceRuntimeExport.value);
       ids.triggerOutput.value = formatPsiProTrigger(ids.commandNumber.value);
     }
 
@@ -669,7 +676,7 @@
         ids.singleOutputWrap.style.display = 'none';
         ids.splitOutputWrap.classList.add('visible');
         updateSplitOutputs(patternName);
-        ids.output.value = formatPsiProFullInoBlock(patternName, ids.commandNumber.value, ids.frameDelayExport.value, ids.sequenceRuntimeExport.value);
+        ids.output.value = formatPsiProFullInoBlock(patternName, ids.commandNumber.value, ids.frameDelayExport.value, ids.loopCountExport.value, ids.sequenceRuntimeExport.value);
         return;
       }
 
@@ -724,7 +731,7 @@
           { name: 'Two', matrix: createBlankMatrix() }
         ];
         if (formatPsiProSequence('SeqTest').indexOf('SeqTest_FrameCount = 2') === -1) throw new Error('Sequence export failed.');
-        if (formatPsiProCommandCase('SeqTest', 25, 200, 6000).indexOf('seqtest_animation(200, loops, 6000);') === -1) throw new Error('Command case export failed.');
+        if (formatPsiProCommandCase('SeqTest', 25, 200, 0, 6000).indexOf('seqtest_animation(200, 0, 6000);') === -1) throw new Error('Command case export failed.');
         if (formatPsiProTrigger(6) !== '@0T6') throw new Error('Trigger export failed.');
         frames = oldFrames;
         refreshFrameList();
@@ -761,6 +768,7 @@
       ids.exportFormat.addEventListener('change', updateOutput);
       ids.commandNumber.addEventListener('input', updateOutput);
       ids.frameDelayExport.addEventListener('input', updateOutput);
+      ids.loopCountExport.addEventListener('input', updateOutput);
       ids.sequenceRuntimeExport.addEventListener('input', updateOutput);
     }
 
